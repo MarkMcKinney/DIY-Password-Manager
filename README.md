@@ -1,7 +1,7 @@
 ![DIY Password Manager Screenshot](banner.png)
 
 # Password Manager
-I built this simply to see if I could do it and to strengthen my cryptography skills and knowledge. This Password Manager doesn't keep your master password. Instead, valid passwords are determined if it decrypts a known string correctly. Additionally, the salt and verifier hashes would be kept in a secure database. However, for educational purposes, I've kept them in text files. 
+I built this to strengthen my cryptography skills and knowledge of data types in Python. This Password Manager doesn't keep your master password. Instead, valid passwords are determined if it decrypts a known string correctly. Typically, the salt and verifier hashes would be kept in a secure database. However, for educational purposes, I've kept them in text files. 
 
 I'd love to hear from you about where I could improve it!
 
