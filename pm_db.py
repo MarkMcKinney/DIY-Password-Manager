@@ -148,9 +148,9 @@ if hashed_pass != False:
                 print ("Could not find that domain saved")
 
         # READ ALL PROFILES
-        if user_cmd == "v":
+        if user_cmd == "r":
             print (divider)
-            print("VIEWING ALL PROFILES\n")
+            print("READING ALL PROFILES\n")
             try:
                 i = 0
                 for e in db:
