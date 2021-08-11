@@ -1,11 +1,10 @@
 import json
 import base64
-import os
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.fernet import Fernet
-import hashlib
+import getpass
 
 # STORE CRYPTOGRAPHY VARIABLES
 
@@ -101,11 +100,12 @@ print('''
                                                                 
     ''')
 # Require password to be entered
-entered_pass = input("Enter Master Key: ")
+entered_pass = getpass.getpass("Enter Master Key: ")
 #entered_pass = "innovativeMoose"
 hashed_pass = verify_password(entered_pass)
-db = json.loads(decrypt_data(contents,hashed_pass).decode('utf-8'))
-print('''                               
+
+if hashed_pass != False:
+    print('''                               
                                    
                                                                        `xx.  
                                                                      'k#@@@h`
@@ -120,12 +120,12 @@ print('''
                                                         )ER)                            
                                                                                                        
     ''')
-print (divider)
+    print (divider)
+    db = json.loads(decrypt_data(contents,hashed_pass).decode('utf-8'))
 
-if hashed_pass != False:
     while True:
 
-        user_cmd = input("\na = add profile | f = find profile data  | e = edit profile data | v = read all profiles | d = delete profile data\nWhat would you like to do? ")
+        user_cmd = input("\n(a)dd profile | (f)ind profile data  | (e)dit profile data | (r)ead all profiles | (d)elete profile data | e(x)it\nWhat would you like to do? ")
         print("\n")
         # ADD PROFILE
         if user_cmd == "a":
@@ -201,6 +201,9 @@ if hashed_pass != False:
                 except:
                     print ("Unable to find "+del_domain)
 
+        # EXIT PROGRAM AND RETURN TO TERMINAL
+        if user_cmd == "x":
+            break
 
 if hashed_pass == False:
     print ("Incorrect master passsword.")
