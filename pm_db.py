@@ -76,6 +76,7 @@ def main_pwd_manager(hashed_pass, contents):
     db = json.loads(decrypt_data(contents,hashed_pass).decode('utf-8'))
     timedOut = False
     while not timedOut:
+        os.system('cls' if os.name == 'nt' else 'clear')
         print(checkImg)
         print (divider)
         user_cmd = print("\n(a)dd profile | (f)ind profile data  | (e)dit profile data | (r)ead all profiles | (d)elete profile data\n(g)enerate password | e(x)it\n\nWhat would you like to do? ")
@@ -116,7 +117,7 @@ def main_pwd_manager(hashed_pass, contents):
             timeoutCleanup()
             timedOut = True
         
-        os.system('cls' if os.name == 'nt' else 'clear')
+       # os.system('cls' if os.name == 'nt' else 'clear')
 
 def addProfile(hashed_pass, db):
     # ADD PROFILE
