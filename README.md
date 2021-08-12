@@ -28,5 +28,8 @@ You can run the demo by opening the pm_db.py file and using **thisisatest!** as 
 - **Turn into CLI tool?**
 - **Certificate authentication feature**
 
+## Shoutouts
+Thank you @aarana14 for doing some major cleanup and formatting of the main code. Much simpler to add future features and debug now!
+
 ## Disclaimer
 This was built for educational purposes. This should not be used as your password manager. This software is provided as is and I do not take any responsibility for any damage or loss done with or by it.
