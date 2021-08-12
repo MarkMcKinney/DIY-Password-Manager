@@ -22,7 +22,6 @@ ChangeLog by aarana14:
  + Added all manager functions as methods for better syntax, flexibility, readibility, and editability
 '''
 
-# TERMINAL FORMATTING
 divider = "-----------------------------------------------------------------------------------------------------------------------\n"
 lockImg = '''                               
                                    
