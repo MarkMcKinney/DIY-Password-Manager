@@ -27,6 +27,8 @@ You can run the demo by opening the pm_db.py file and using **thisisatest!** as 
 - **Auto Copy & Paster Logins**: Function for user to export username/password to clipboard
 - **Turn into CLI tool?**
 - **Certificate authentication feature**
+- **Make it look sexy**: Taking a look at adding this: https://github.com/willmcgugan/rich
+- **Keep command input lowercased**
 
 ## Shoutouts
 Thank you @aarana14 for doing some major cleanup and formatting of the main code. Much simpler to add future features and debug now!
