@@ -22,16 +22,20 @@ You can run the demo by opening the pm_db.py file and using **thisisatest!** as 
 - ~~**Password generator**~~: You can now generate truely random and secure passwords of a desired length.
 - ~~**Better search**~~: Find profile without knowing the website url exactly. Debating if the delete feature should have this function?
 - ~~**Data scrubbing**~~: Your activity won't be logged in terminal output.
-- ~~**Timeout after 90 seconds idle**~~: It's a little janky, I'd like it so the user could just press enter, but that currently submits the \*TIMEOUT\* state and logs the user out. Any assistance on that would be great!
+- ~~**Timeout after 90 seconds idle**~~
+- **Fix entering blank input causes timeout**
 - **Fix backspacing**: If you make a mistake, you have to go through the process again. Not terrible, but inconvienient.
-- **Auto Copy & Paster Logins**: Function for user to export username/password to clipboard
+- ~~**Auto Copy & Paster Logins**~~: Function for user to export username/password to clipboard
 - **Turn into CLI tool?**
-- **Certificate authentication feature**
 - **Make it look sexy**: Taking a look at adding this: https://github.com/willmcgugan/rich
-- **Keep command input lowercased**
+- ~~**Keep command input lowercased**~~
+- **Use Argon2 for hashing**: Uses Scrypt right now.
 
 ## Shoutouts
 Thank you @aarana14 for doing some major cleanup and formatting of the main code. Much simpler to add future features and debug now!
+- @deep-bhatt
+- @maxdunbar
+- @gileadecastro
 
 ## Disclaimer
 This was built for educational purposes. This should not be used as your password manager. This software is provided as is and I do not take any responsibility for any damage or loss done with or by it.

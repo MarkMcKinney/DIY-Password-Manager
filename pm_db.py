@@ -1,16 +1,14 @@
 import json
 import base64
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
 from cryptography.fernet import Fernet
 import getpass
 import os
 import threading, msvcrt
-import sys
 import difflib
 import string
 import secrets
+import pyperclip
 
 """
 ChangeLog by aarana14:
@@ -72,6 +70,7 @@ def main():
         if not hashed_pass:
             print("Incorrect master password. Try again.\n")
     if hashed_pass:
+        del entered_pass
         main_pwd_manager(hashed_pass, dataBase)
 
 
@@ -88,6 +87,10 @@ def main_pwd_manager(hashed_pass, contents):
         )
         user_cmd = timeoutInput("", "*TIMEOUT*")
         print("\n")
+
+        # Ensure user input is lowercase
+        if user_cmd != "*TIMEOUT*":
+            user_cmd = user_cmd.lower()
 
         # Add Profile
         if user_cmd == "a":
@@ -178,6 +181,7 @@ def findProfileData(hashed_pass, db):
             matches = difflib.get_close_matches(read_domain, domains)
             if matches:
                 print("\nClosest match:\n")
+                i = 1
                 for d in matches:
                     domain_info = db[d]
                     username = str(
@@ -186,15 +190,34 @@ def findProfileData(hashed_pass, db):
                             hashed_pass,
                         ).decode("utf-8")
                     )
-                    password = str(
-                        decrypt_data(
-                            bytes(domain_info["password"], encoding="utf-8"),
-                            hashed_pass,
-                        ).decode("utf-8")
-                    )
-                    print(d)
-                    print("Username: " + username)
-                    print("Password: " + password + "\n")
+                    print("PROFILE " + str(i) + ": " + d)
+                    del d
+                    print("Username: " + username + "\n")
+                    del domain_info
+                    del username
+                    i = i + 1
+                print("\nSelect the password to be copied to your clipboard (ex: 1), or type (.c) to cancel: ")
+                userContinue = timeoutInput("", "*TIMEOUT*")
+                if userContinue.isdigit() == True:
+                    if int(userContinue) > 0:
+                        try:
+                            password = str(
+                                decrypt_data(
+                                    bytes(db[str(matches[int(userContinue) - 1])]["password"], encoding="utf-8"),
+                                    hashed_pass,
+                                ).decode("utf-8")
+                            )
+                            print("\n" + to_clipboard(password))
+                            del password
+                        except:
+                            print("\nUnable to find profile corresponding to " + str(userContinue) + ".")
+                    else:
+                        print("\nThere are no profiles corresponding to that number.")
+                if userContinue == "*TIMEOUT*":
+                    timeoutCleanup()
+                    return True
+                if userContinue.isdigit() == False and userContinue != "*TIMEOUT*":
+                    return False
             else:
                 print("Could not find a match. Try viewing all saved profiles.")
         except:
@@ -262,6 +285,12 @@ def editProfileData(hashed_pass, db):
             }
             overwrite_db(encrypt_data(json.dumps(db), hashed_pass).decode("utf-8"))
             print("Updated " + edit_domain + " profile successfully!")
+            del edit_domain
+            del curr_user
+            del edit_user
+            del curr_password
+            del edit_password
+            del db
             print("\nType and submit (m) to return to menu...")
             userContinue = timeoutInput("", "*TIMEOUT*")
             if userContinue == "*TIMEOUT*":
@@ -284,24 +313,45 @@ def readAllProfiles(hashed_pass, db):
     displayHeader("READING ALL PROFILES")
     try:
         i = 0
+        domains = list(db.keys())
         for e in db:
+            i = i + 1
             username = str(
                 decrypt_data(
                     bytes(db[e]["username"], encoding="utf-8"), hashed_pass
                 ).decode("utf-8")
             )
-            password = str(
-                decrypt_data(
-                    bytes(db[e]["password"], encoding="utf-8"), hashed_pass
-                ).decode("utf-8")
-            )
-            print(e)
+            print("PROFILE " + str(i) + ": " + e)
             print("Username: " + username)
-            print("Password: " + password)
+            del e
+            del username
             print(divider)
-            i = i + 1
         if i == 0:
             print("No saved profiles")
+        if i > 0:
+            print("\nSelect the password to be copied to your clipboard (ex: 1), or type (.c) to cancel: ")
+            userContinue = timeoutInput("", "*TIMEOUT*")
+            if userContinue.isdigit() == True:
+                if int(userContinue) > 0:
+                    try:
+                        password = str(
+                            decrypt_data(
+                                bytes(db[str(domains[int(userContinue) - 1])]["password"], encoding="utf-8"),
+                                hashed_pass,
+                            ).decode("utf-8")
+                        )
+                        print("\n" + to_clipboard(password))
+                        del password
+                    except:
+                        print("\nUnable to find profile corresponding to " + str(userContinue) + ".")
+                else:
+                    print("\nThere are no profiles corresponding to that number.")
+            if userContinue == "*TIMEOUT*":
+                timeoutCleanup()
+                return True
+            if userContinue.isdigit() == False and userContinue != "*TIMEOUT*":
+                return False
+            
     except:
         print("Could not load all profiles")
     print("\nType and submit (m) to return to menu...")
@@ -404,6 +454,12 @@ def displayHeader(title):
     print(str(title) + "\n")
 
 
+# Put string in clipboard
+def to_clipboard(input_to_copy):
+    pyperclip.copy(str(input_to_copy))
+    del input_to_copy
+    return "Password was saved to clipboard."
+
 # TIMEOUT
 def timeoutCleanup():
     os.system("cls" if os.name == "nt" else "clear")
@@ -483,12 +539,12 @@ def verify_password(password_provided, cSALT, cVERIFIER):
     # Hash password for later comparison
     password = password_provided.encode()  # Convert to type bytes
     salt = cSALT
-    kdf = PBKDF2HMAC(
-        algorithm=hashes.SHA256(),
-        length=32,
+    kdf = Scrypt(
         salt=salt,
-        iterations=100000,
-        backend=default_backend(),
+        length=32,
+        n=2**14,
+        r=8,
+        p=1,
     )
     hashed_entered_pass = base64.urlsafe_b64encode(
         kdf.derive(password)
