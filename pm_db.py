@@ -97,7 +97,7 @@ def main_pwd_manager(hashed_pass, contents):
 
         # EDIT PROFILE
         if user_cmd == "e":
-            timedOut = editProfileData()
+            timedOut = editProfileData(hashed_pass, db)
 
         # DELETE PROFILE
         if user_cmd == "d":
