@@ -404,12 +404,8 @@ def pwdGenerate(hashed_pass, db):
             if int(pass_length) < 6:
                 pass_length = str(12)
                 print("\nPasswords must be at least 6 characters long.")
-            print(
-                "\nYour "
-                + pass_length
-                + " Character Password: "
-                + generate_password(int(pass_length))
-            )
+            to_clipboard(str(generate_password(int(pass_length))))
+            print("\nYour generated password was copied to your clipboard.")
             print("\nType and submit (m) to return to menu...")
             userContinue = timeoutInput("", "*TIMEOUT*")
             if userContinue == "*TIMEOUT*":
