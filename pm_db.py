@@ -124,10 +124,16 @@ def main_pwd_manager(hashed_pass, contents):
         if user_cmd == "x":
             os.system("cls" if os.name == "nt" else "clear")
             timedOut = True
+
+        # EXIT BECAUSE OF TIMEOUT
+        if user_cmd == timeoutGlobalCode:
+            timeoutCleanup()
+            timedOut = True
             
     # CLEANUP SENSITIVE INFO ON TIMEOUT
     del hashed_pass
     del contents
+    del db
 
 def addProfile(hashed_pass, db):
     # ADD PROFILE
@@ -390,8 +396,6 @@ def to_clipboard(input_to_copy):
 
 # TIMEOUT
 def timeoutCleanup():
-    global hashed_pass
-    del hashed_pass
     os.system("cls" if os.name == "nt" else "clear")
     print(lockImg)
     print(
