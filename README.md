@@ -30,7 +30,7 @@ You can run the demo by opening the pm_db.py file and using **thisisatest!** as 
 - **Make it look sexy**: Taking a look at adding this: https://github.com/willmcgugan/rich
 - ~~**Keep command input lowercased**~~
 - **Use Argon2 for hashing**: Uses Scrypt right now.
-- **Added requirements.txt**
+- ~~**Added requirements.txt**~~
 - ~~**Clear clipboard after pasting**~~
 
 ## Shoutouts
