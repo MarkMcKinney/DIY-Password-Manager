@@ -4,12 +4,14 @@ from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
 from cryptography.fernet import Fernet
 import getpass
 import os
-import threading, msvcrt
+import threading
 import difflib
 import string
 import secrets
 import pyperclip
-
+import time
+from inputimeout import inputimeout, TimeoutOccurred
+import keyboard as kb
 """
 ChangeLog by aarana14:
  + Added main function to run program, allowing more flexibility to allow user to input master password more than once if they messed up. Also better syntax.
@@ -55,6 +57,8 @@ checkImg = """
                                                                                                        
     """
 
+# Global Variables
+timeoutGlobalCode = "*TIMEOUT*"
 
 def main():
     # RUN PROGRAM
@@ -83,13 +87,13 @@ def main_pwd_manager(hashed_pass, contents):
         print(checkImg)
         print(divider)
         user_cmd = print(
-            "\n(a)dd profile | (f)ind profile data  | (e)dit profile data | (r)ead all profiles | (d)elete profile data\n(g)enerate password | e(x)it\n\nWhat would you like to do? "
+            "\n(a)dd profile | (f)ind profile data  | (e)dit profile data | (r)ead all profiles | (d)elete profile data\n(g)enerate password | e(x)it\n"
         )
-        user_cmd = timeoutInput("", "*TIMEOUT*")
+        user_cmd = timeoutInput("What would you like to do? ")
         print("\n")
 
         # Ensure user input is lowercase
-        if user_cmd != "*TIMEOUT*":
+        if user_cmd != timeoutGlobalCode:
             user_cmd = user_cmd.lower()
 
         # Add Profile
@@ -122,33 +126,19 @@ def main_pwd_manager(hashed_pass, contents):
             timedOut = True
 
         # EXIT BECAUSE OF TIMEOUT
-        if user_cmd == "*TIMEOUT*":
+        if user_cmd == timeoutGlobalCode:
             timeoutCleanup()
             timedOut = True
-
-    # os.system('cls' if os.name == 'nt' else 'clear')
 
 
 def addProfile(hashed_pass, db):
     # ADD PROFILE
     displayHeader("ADD A PROFILE")
     print("Type and submit (.c) to cancel.")
-    print("Website domain name:")
-    add_domain = timeoutInput("", "*TIMEOUT*")
-    if add_domain == "*TIMEOUT*":
-        timeoutCleanup()
-        return True
+    add_domain = timeoutInput("Website domain name: ")
     if add_domain != ".c":  # Cancel if mind is changed
-        print("Username:")
-        add_user = timeoutInput("", "*TIMEOUT*")
-        if add_user == "*TIMEOUT*":
-            timeoutCleanup()
-            return True
-        print("Password:")
-        add_password = timeoutInput("", "*TIMEOUT*")
-        if add_password == "*TIMEOUT*":
-            timeoutCleanup()
-            return True
+        add_user = timeoutInput("Username: ")
+        add_password = timeoutInput("Password: ")
     if add_domain != ".c":
         db[add_domain] = {
             "username": str(encrypt_data(add_user, hashed_pass).decode("utf-8")),
@@ -158,11 +148,7 @@ def addProfile(hashed_pass, db):
         print("Created " + add_domain + " profile successfully!")
     else:
         print("Operation canceled.")
-    print("\nPress (m) to return to menu...")
-    userContinue = timeoutInput("", "*TIMEOUT*")
-    if userContinue == "*TIMEOUT*":
-        timeoutCleanup()
-        return True
+    timeoutInput("\nPress enter to return to menu...")
     print("Returning to Menu")
     return False
 
@@ -170,11 +156,7 @@ def addProfile(hashed_pass, db):
 def findProfileData(hashed_pass, db):
     displayHeader("FIND A PROFILE")
     print("Type and submit (.c) to cancel.")
-    print("What's the domain you're looking for?")
-    read_domain = timeoutInput("", "*TIMEOUT*")
-    if read_domain == "*TIMEOUT*":
-        timeoutCleanup()
-        return True
+    read_domain = timeoutInput("What's the domain you're looking for? ")
     if read_domain != ".c":
         try:
             domains = list(db.keys())
@@ -196,8 +178,7 @@ def findProfileData(hashed_pass, db):
                     del domain_info
                     del username
                     i = i + 1
-                print("\nSelect the password to be copied to your clipboard (ex: 1), or type (.c) to cancel: ")
-                userContinue = timeoutInput("", "*TIMEOUT*")
+                userContinue = timeoutInput("\nSelect the password to be copied to your clipboard (ex: 1), or type (.c) to cancel: ")
                 if userContinue.isdigit() == True:
                     if int(userContinue) > 0:
                         try:
@@ -213,20 +194,13 @@ def findProfileData(hashed_pass, db):
                             print("\nUnable to find profile corresponding to " + str(userContinue) + ".")
                     else:
                         print("\nThere are no profiles corresponding to that number.")
-                if userContinue == "*TIMEOUT*":
-                    timeoutCleanup()
-                    return True
-                if userContinue.isdigit() == False and userContinue != "*TIMEOUT*":
+                if userContinue.isdigit() == False:
                     return False
             else:
                 print("Could not find a match. Try viewing all saved profiles.")
         except:
             print("Error finding profile.")
-        print("\nType and submit (m) to return to menu...")
-        userContinue = timeoutInput("", "*TIMEOUT*")
-        if userContinue == "*TIMEOUT*":
-            timeoutCleanup()
-            return True
+        userContinue = timeoutInput("\nPress enter to return to menu...")
         return False
     else:  # No timeout needed as this is an imediate action after cancelation
         print("Operation canceled.")
@@ -236,11 +210,7 @@ def findProfileData(hashed_pass, db):
 
 def editProfileData(hashed_pass, db):
     displayHeader("EDIT A PROFILE")
-    print("Website domain name (submit (.c) to cancel): ")
-    edit_domain = timeoutInput("", "*TIMEOUT*")
-    if edit_domain == "*TIMEOUT*":
-        timeoutCleanup()
-        return True
+    edit_domain = timeoutInput("Website domain name (submit (.c) to cancel): ")
     if edit_domain != ".c":
         try:
             domain_info = db[edit_domain]
@@ -255,23 +225,13 @@ def editProfileData(hashed_pass, db):
                 ).decode("utf-8")
             )
 
-            print("New Username (submit (.c) to keep the current: " + curr_user + "):")
-            edit_user = timeoutInput("", "*TIMEOUT*")
-            if edit_user == "*TIMEOUT*":
-                timeoutCleanup()
-                return True
+            edit_user = timeoutInput("New Username (submit (.c) to keep the current: " + curr_user + "): ")
             if edit_user == ".c":
                 edit_user = ""
             if edit_user == "" or edit_user == " ":
                 edit_user = curr_user
 
-            print(
-                "New Password (submit (.c) to keep the current: " + curr_password + "):"
-            )
-            edit_password = timeoutInput("", "*TIMEOUT*")
-            if edit_password == "*TIMEOUT*":
-                timeoutCleanup()
-                return True
+            edit_password = timeoutInput("New Password (submit (.c) to keep the current: " + curr_password + "): ")
             if edit_password == ".c":
                 edit_password = ""
             if edit_password == "" or edit_password == " ":
@@ -291,18 +251,12 @@ def editProfileData(hashed_pass, db):
             del curr_password
             del edit_password
             del db
-            print("\nType and submit (m) to return to menu...")
-            userContinue = timeoutInput("", "*TIMEOUT*")
-            if userContinue == "*TIMEOUT*":
-                timeoutCleanup()
-                return True
+            userContinue = timeoutInput("\nPress enter to return to menu...")
+            print("Returning to menu")
+            return False
         except:
             print("This domain does not exist, changing to adding to new profile")
-            print("\nType and submit (m) to return to menu...")
-            userContinue = timeoutInput("", "*TIMEOUT*")
-            if userContinue == "*TIMEOUT*":
-                timeoutCleanup()
-                return True
+            userContinue = timeoutInput("\nPress enter to return to menu...")
             return False
     else:
         print("Returning to menu")
@@ -329,8 +283,7 @@ def readAllProfiles(hashed_pass, db):
         if i == 0:
             print("No saved profiles")
         if i > 0:
-            print("\nSelect the password to be copied to your clipboard (ex: 1), or type (.c) to cancel: ")
-            userContinue = timeoutInput("", "*TIMEOUT*")
+            userContinue = timeoutInput("\nSelect the password to be copied to your clipboard (ex: 1), or type (.c) to cancel: ")
             if userContinue.isdigit() == True:
                 if int(userContinue) > 0:
                     try:
@@ -346,46 +299,30 @@ def readAllProfiles(hashed_pass, db):
                         print("\nUnable to find profile corresponding to " + str(userContinue) + ".")
                 else:
                     print("\nThere are no profiles corresponding to that number.")
-            if userContinue == "*TIMEOUT*":
-                timeoutCleanup()
-                return True
-            if userContinue.isdigit() == False and userContinue != "*TIMEOUT*":
+            if userContinue.isdigit() == False and userContinue != timeoutGlobalCode:
                 return False
             
     except:
         print("Could not load all profiles")
-    print("\nType and submit (m) to return to menu...")
-    userContinue = timeoutInput("", "*TIMEOUT*")
-    if userContinue == "*TIMEOUT*":
-        timeoutCleanup()
-        return True
+    userContinue = timeoutInput("\nPress enter to return to menu...")
     return False
 
 
 def deleteProfileData(hashed_pass, db):
     displayHeader("DELETE A PROFILE")
-    print("Write the exact saved domain name (type (.c) to cancel): ")
-    del_domain = timeoutInput("", "*TIMEOUT*")
-    if del_domain == "*TIMEOUT*":
-        timeoutCleanup()
-        return True
+    del_domain = timeoutInput("Write the exact saved domain name (type (.c) to cancel): ")
     if del_domain != ".c":
         try:
             del db[del_domain]
             overwrite_db(encrypt_data(json.dumps(db), hashed_pass).decode("utf-8"))
             print("Deleted " + del_domain + " profile successfully!")
-            print("\nType and submit (m) to return to menu...")
-            userContinue = timeoutInput("", "*TIMEOUT*")
-            if userContinue == "*TIMEOUT*":
-                timeoutCleanup()
-                return True
+            userContinue = timeoutInput("\nPress enter to return to menu...")
+            print("Returning to menu")
+            return False
         except:
             print("Unable to find " + del_domain)
-            print("\nType and submit (m) to return to menu...")
-            userContinue = timeoutInput("", "*TIMEOUT*")
-            if userContinue == "*TIMEOUT*":
-                timeoutCleanup()
-                return True
+            userContinue = timeoutInput("\nPress enter to return to menu...")
+            print("Returning to menu")
             return False
     else:
         print("Returning to menu...")
@@ -394,34 +331,24 @@ def deleteProfileData(hashed_pass, db):
 
 def pwdGenerate(hashed_pass, db):
     displayHeader("GENERATE RANDOM PASSWORD")
-    print("How long would like your password (type (c) to cancel): ")
-    pass_length = str(timeoutInput("", "*TIMEOUT*"))
-    if pass_length == "*TIMEOUT*":
-        timeoutCleanup()
-        return True
+    pass_length = str(timeoutInput("Password length (type (.c) to cancel): "))
     if pass_length != ".c":
         try:
             if int(pass_length) < 6:
                 pass_length = str(12)
                 print("\nPasswords must be at least 6 characters long.")
-            to_clipboard(str(generate_password(int(pass_length))))
-            print("\nYour generated password was copied to your clipboard.")
-            print("\nType and submit (m) to return to menu...")
-            userContinue = timeoutInput("", "*TIMEOUT*")
-            if userContinue == "*TIMEOUT*":
-                timeoutCleanup()
-                return True
-        except:
-            print("Unable to generate password.")
-            userContinue = timeoutInput("", "*TIMEOUT*")
-            print("\nType and submit (m) to return to menu...")
-            if userContinue == "*TIMEOUT*":
-                timeoutCleanup()
-                return True
-            return False
-        else:
+            print(to_clipboard(str(generate_password(int(pass_length)))))
+            userContinue = timeoutInput("\nPress enter to return to menu...")
             print("Returning to menu")
             return False
+        except:
+            print("Unable to generate password.")
+            userContinue = timeoutInput("\nPress enter to return to menu...")
+            print("Returning to menu")
+            return False
+    else:
+        print("Returning to menu")
+        return False
 
 
 def fileSetup():
@@ -450,11 +377,18 @@ def displayHeader(title):
     print(str(title) + "\n")
 
 
+# Clear clipboard after 30 seconds
+def clear_clipboard_timer():
+    kb.add_hotkey("ctrl+v",lambda: pyperclip.copy(""))
+
+
 # Put string in clipboard
 def to_clipboard(input_to_copy):
     pyperclip.copy(str(input_to_copy))
     del input_to_copy
-    return "Password was saved to clipboard."
+    threading.Thread(target=clear_clipboard_timer).start()
+    return "Password was saved to clipboard. It will be removed from your clipboard as soon as you paste it."
+
 
 # TIMEOUT
 def timeoutCleanup():
@@ -462,35 +396,17 @@ def timeoutCleanup():
     print(lockImg)
     print(
         "\n\nYour session expired. For your security, the program has automatically exited. All submitted data is still saved."
-    )
+    ) 
+    exit
 
 
-def timeoutInput(caption, default, timeout=90):
-    class KeyboardThread(threading.Thread):
-        def run(self):
-            self.timedout = False
-            self.input = ""
-            while True:
-                if msvcrt.kbhit():
-                    chr = msvcrt.getche()
-                    if ord(chr) == 13:
-                        break
-                    elif ord(chr) >= 32:
-                        self.input += str(chr.decode("UTF-8"))
-                if len(self.input) == 0 and self.timedout:
-                    break
-
-    result = default
-    it = KeyboardThread()
-    it.start()
-    it.join(timeout)
-    it.timedout = True
-    if len(it.input) > 0:
-        # wait for rest of input
-        it.join()
-        result = it.input
-    print("")  # needed to move to next line
-    return result
+def timeoutInput(caption):
+    try:
+        user_input = inputimeout(prompt=caption, timeout=90)
+    except TimeoutOccurred:
+        user_input = timeoutGlobalCode
+        timeoutCleanup()
+    return(user_input)
 
 
 # CRYPTOGRAPHY FUNCTIONS

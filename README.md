@@ -23,13 +23,15 @@ You can run the demo by opening the pm_db.py file and using **thisisatest!** as 
 - ~~**Better search**~~: Find profile without knowing the website url exactly. Debating if the delete feature should have this function?
 - ~~**Data scrubbing**~~: Your activity won't be logged in terminal output.
 - ~~**Timeout after 90 seconds idle**~~
-- **Fix entering blank input causes timeout**
-- **Fix backspacing**: If you make a mistake, you have to go through the process again. Not terrible, but inconvienient.
+- ~~**Fix entering blank input causes timeout**~~ Now available **across platforms**.
+- ~~**Fix backspacing**~~: If you make a mistake, you have to go through the process again. Not terrible, but inconvienient.
 - ~~**Auto Copy & Paster Logins**~~: Function for user to export username/password to clipboard
 - **Turn into CLI tool?**
 - **Make it look sexy**: Taking a look at adding this: https://github.com/willmcgugan/rich
 - ~~**Keep command input lowercased**~~
 - **Use Argon2 for hashing**: Uses Scrypt right now.
+- **Added requirements.txt**
+- ~~**Clear clipboard after pasting**~~
 
 ## Shoutouts
 Thank you @aarana14 for doing some major cleanup and formatting of the main code. Much simpler to add future features and debug now!
