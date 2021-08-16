@@ -144,7 +144,7 @@ def main_pwd_manager(hashed_pass, contents):
 def changeMasterPassword(hashed_pass, db):
     # CHANGE MASTER PASSWORD
     displayHeader("CHANGE MASTER PASSWORD")
-    password_provided = getpass.getpass("What would you like your master password to be (type and submit (.c) to cancel)? ")
+    password_provided = timeoutInput("What would you like your master password to be (type and submit (.c) to cancel)? ")
     if password_provided != ".c":
         password = password_provided.encode()  # Convert to type bytes
         salt = os.urandom(random.randint(16, 256))
