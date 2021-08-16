@@ -1,0 +1,7 @@
+inputimeout==1.0.4
+keyboard==0.13.5
+cryptography==3.3.1
+pyperclip==1.8.2
+argon2_cffi==20.1.0
+argon2==0.1.10
+secrets==1.0.2

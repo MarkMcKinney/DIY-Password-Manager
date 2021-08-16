@@ -139,7 +139,7 @@ def main_pwd_manager(hashed_pass, contents):
     del hashed_pass
     del contents
     del db
-    
+
     
 def changeMasterPassword(hashed_pass, db):
     # CHANGE MASTER PASSWORD
@@ -211,7 +211,7 @@ def changeMasterPassword(hashed_pass, db):
     timeoutInput("\nPress enter to return to menu...")
     print("Returning to Menu")
     return False
-    
+
 
 def addProfile(hashed_pass, db):
     # ADD PROFILE
