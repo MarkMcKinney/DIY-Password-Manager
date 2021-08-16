@@ -32,12 +32,14 @@ You can run the demo by opening the pm_db.py file and using **thisisatest!** as 
 - **Use Argon2 for hashing**: Uses Scrypt right now.
 - ~~**Added requirements.txt**~~
 - ~~**Clear clipboard after pasting**~~
+- **Create timeout function for password entry**
 
 ## Shoutouts
-Thank you @aarana14 for doing some major cleanup and formatting of the main code. Much simpler to add future features and debug now!
+- @aarana14 for doing some major cleanup and formatting of the main code. Much simpler to add future features and debug now!
+- @Kleysley for creating Change Master Password function.
 - @deep-bhatt
 - @maxdunbar
 - @gileadecastro
 
 ## Disclaimer
-This was built for educational purposes. This should not be used as your password manager. This software is provided as is and I do not take any responsibility for any damage or loss done with or by it.
+This was built for educational purposes. This Password Manager is used at your own risk. This software is provided as is and I (including any contributors) do not take any responsibility for any damage or loss done with or by it.

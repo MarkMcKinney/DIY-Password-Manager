@@ -1,5 +1,6 @@
 import json
 import base64
+import random
 from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
 from cryptography.fernet import Fernet
 import getpass
@@ -12,6 +13,7 @@ import pyperclip
 import time
 from inputimeout import inputimeout, TimeoutOccurred
 import keyboard as kb
+import sys
 """
 ChangeLog by aarana14:
  + Added main function to run program, allowing more flexibility to allow user to input master password more than once if they messed up. Also better syntax.
@@ -87,7 +89,7 @@ def main_pwd_manager(hashed_pass, contents):
         print(checkImg)
         print(divider)
         user_cmd = print(
-            "\n(a)dd profile | (f)ind profile data  | (e)dit profile data | (r)ead all profiles | (d)elete profile data\n(g)enerate password | e(x)it\n"
+            "\n(a)dd profile | (f)ind profile data  | (e)dit profile data | (r)ead all profiles | (d)elete profile data\n(g)enerate password | (c)hange master password | e(x)it\n"
         )
         user_cmd = timeoutInput("What would you like to do? ")
         print("\n")
@@ -119,6 +121,10 @@ def main_pwd_manager(hashed_pass, contents):
         # GENERATE PASSWORD
         if user_cmd == "g":
             timedOut = pwdGenerate(hashed_pass, db)
+        
+        # CHANGE MASTER PASSWORD
+        if user_cmd == "c":
+            timedOut = changeMasterPassword(hashed_pass, db)
 
         # EXIT PROGRAM AND RETURN TO TERMINAL
         if user_cmd == "x":
@@ -134,34 +140,119 @@ def main_pwd_manager(hashed_pass, contents):
     del hashed_pass
     del contents
     del db
+    
+    
+def changeMasterPassword(hashed_pass, db):
+    # CHANGE MASTER PASSWORD
+    displayHeader("CHANGE MASTER PASSWORD")
+    password_provided = timeoutInput("What would you like your master password to be (type and submit (.c) to cancel)? ")
+    if password_provided != ".c" and password_provided != "" and password_provided != " " and password_provided != timeoutGlobalCode:
+        password = password_provided.encode()  # Convert to type bytes
+        salt = os.urandom(random.randint(16, 256))
+        kdf = Scrypt(
+            salt=salt,
+            length=32,
+            n=2 ** 14,
+            r=8,
+            p=1,
+        )
+        hashed_entered_pass = base64.urlsafe_b64encode(kdf.derive(password))  # Can only use kdf once
+        try:
+            i = -1
+            domains = list(db.keys())
+            for e in db:
+                i = i + 1
+
+                # decrypt the username and password with the original master passwordd
+                username = str(
+                    decrypt_data(
+                        bytes(db[domains[i]]["username"], encoding="utf-8"), hashed_pass
+                    ).decode("utf-8")
+                )
+
+                password = str(
+                    decrypt_data(
+                        bytes(db[domains[i]][ "password"], encoding="utf-8"),
+                        hashed_pass,
+                    ).decode("utf-8")
+                )
+
+                # encrypt and save them with then new master password
+                db[domains[i]] = {
+                    "username": str(encrypt_data(username, hashed_entered_pass).decode("utf-8")),
+                    "password": str(
+                        encrypt_data(password, hashed_entered_pass).decode("utf-8")
+                    ),
+                }
+
+                del e
+                del username
+                del password
+
+            del domains
+            file = open("SALT.txt", "wb")
+            file.write(salt)
+            file.close()
+            del salt
+
+            file = open("VERIFIER.txt", "wb")
+            file.write(encrypt_data("entered_master_correct", hashed_entered_pass))
+            file.close()
+            
+            #finally overwrite the database file with everything encrypted with the new password
+            overwrite_db(encrypt_data(json.dumps(db), hashed_entered_pass).decode("utf-8"))
+            del hashed_entered_pass
+            del hashed_pass
+            os.system("cls" if os.name == "nt" else "clear")
+            print("Master password changed successfully! Log in again to access the password manager.")
+            timeoutInput("\nPress enter to logout..")
+            return True
+        except:
+            print("Could not change master password (Error code: 01)")
+            userContinue = timeoutInput("\nPress enter to return to menu...")
+            if userContinue != timeoutGlobalCode:
+                return False
+            else:
+                return True
+    else:
+        if password_provided != timeoutGlobalCode:
+            userContinue = timeoutInput("\nPress enter to return to menu...")
+            if userContinue != timeoutGlobalCode:
+                return False
+            else:
+                return True
+        else:
+            return True
+    
 
 def addProfile(hashed_pass, db):
     # ADD PROFILE
     displayHeader("ADD A PROFILE")
     print("Type and submit (.c) to cancel.")
     add_domain = timeoutInput("Website domain name: ")
-    if add_domain != ".c":  # Cancel if mind is changed
+    if add_domain != ".c" and add_domain != timeoutGlobalCode:
         add_user = timeoutInput("Username: ")
+    if add_user != ".c" and add_user != timeoutGlobalCode: 
         add_password = timeoutInput("Password: ")
-    if add_domain != ".c":
+    if add_domain != ".c" and add_domain != timeoutGlobalCode and add_user != timeoutGlobalCode and add_password != timeoutGlobalCode:
         db[add_domain] = {
             "username": str(encrypt_data(add_user, hashed_pass).decode("utf-8")),
             "password": str(encrypt_data(add_password, hashed_pass).decode("utf-8")),
         }
         overwrite_db(encrypt_data(json.dumps(db), hashed_pass).decode("utf-8"))
         print("Created " + add_domain + " profile successfully!")
-    else:
+    if add_domain == ".c":
         print("Operation canceled.")
-    timeoutInput("\nPress enter to return to menu...")
-    print("Returning to Menu")
-    return False
+        return False
+    if add_domain == timeoutGlobalCode or add_user == timeoutGlobalCode or add_password == timeoutGlobalCode:
+        return True
 
 
 def findProfileData(hashed_pass, db):
     displayHeader("FIND A PROFILE")
     print("Type and submit (.c) to cancel.")
     read_domain = timeoutInput("What's the domain you're looking for? ")
-    if read_domain != ".c":
+    if read_domain != ".c" and read_domain != timeoutGlobalCode:
         try:
             domains = list(db.keys())
             matches = difflib.get_close_matches(read_domain, domains)
@@ -199,23 +290,31 @@ def findProfileData(hashed_pass, db):
                     else:
                         print("\nThere are no profiles corresponding to that number.")
                 if userContinue.isdigit() == False:
-                    return False
+                    if userContinue != timeoutGlobalCode:
+                        return False
+                    else:
+                        return True
             else:
                 print("Could not find a match. Try viewing all saved profiles.")
         except:
             print("Error finding profile.")
         userContinue = timeoutInput("\nPress enter to return to menu...")
-        return False
-    else:  # No timeout needed as this is an imediate action after cancelation
+        if userContinue != timeoutGlobalCode:
+            return False
+        else:
+            return True
+    if read_domain == ".c":
         print("Operation canceled.")
         print("\nReturning to Menu")
         return False
+    if read_domain == timeoutGlobalCode:
+        return True
 
 
 def editProfileData(hashed_pass, db):
     displayHeader("EDIT A PROFILE")
     edit_domain = timeoutInput("Website domain name (submit (.c) to cancel): ")
-    if edit_domain != ".c":
+    if edit_domain != ".c" and edit_domain != timeoutGlobalCode:
         try:
             domain_info = db[edit_domain]
             curr_user = str(
@@ -229,17 +328,17 @@ def editProfileData(hashed_pass, db):
                 ).decode("utf-8")
             )
 
-            edit_user = timeoutInput("New Username (submit (.c) to keep the current: " + curr_user + "): ")
-            if edit_user == ".c":
-                edit_user = ""
-            if edit_user == "" or edit_user == " ":
+            edit_user = timeoutInput("New Username (press enter to keep the current: " + curr_user + "): ")
+            if edit_user == ".c" or edit_user == " " or edit_user == "":
                 edit_user = curr_user
+            if edit_user == timeoutGlobalCode:
+                return True
 
-            edit_password = timeoutInput("New Password (submit (.c) to keep the current: " + curr_password + "): ")
-            if edit_password == ".c":
-                edit_password = ""
-            if edit_password == "" or edit_password == " ":
+            edit_password = timeoutInput("New Password (press enter to keep the current: " + curr_password + "): ")
+            if edit_password == ".c" or edit_password == " " or edit_user == "":
                 edit_password = curr_password
+            if edit_password == timeoutGlobalCode:
+                return True
 
             db[edit_domain] = {
                 "username": str(encrypt_data(edit_user, hashed_pass).decode("utf-8")),
@@ -256,15 +355,24 @@ def editProfileData(hashed_pass, db):
             del edit_password
             del db
             userContinue = timeoutInput("\nPress enter to return to menu...")
-            print("Returning to menu")
-            return False
+            if userContinue != timeoutGlobalCode:
+                print("Returning to menu")
+                return False
+            else:
+                return True
         except:
             print("This domain does not exist, changing to adding to new profile")
             userContinue = timeoutInput("\nPress enter to return to menu...")
-            return False
-    else:
+            if userContinue != timeoutGlobalCode:
+                print("Returning to menu")
+                return False
+            else:
+                return True
+    if edit_domain != timeoutGlobalCode:
         print("Returning to menu")
         return False
+    else:
+        return True
 
 
 def readAllProfiles(hashed_pass, db):
@@ -305,54 +413,77 @@ def readAllProfiles(hashed_pass, db):
                     print("\nThere are no profiles corresponding to that number.")
             if userContinue.isdigit() == False and userContinue != timeoutGlobalCode:
                 return False
-            
+            if userContinue == timeoutGlobalCode:
+                return True            
     except:
         print("Could not load all profiles")
     userContinue = timeoutInput("\nPress enter to return to menu...")
-    return False
+    if userContinue != timeoutGlobalCode:
+        print("Returning to menu")
+        return False
+    else:
+        return True
 
 
 def deleteProfileData(hashed_pass, db):
     displayHeader("DELETE A PROFILE")
     del_domain = timeoutInput("Write the exact saved domain name (type (.c) to cancel): ")
-    if del_domain != ".c":
+    if del_domain != ".c" and del_domain != timeoutGlobalCode:
         try:
             del db[del_domain]
             overwrite_db(encrypt_data(json.dumps(db), hashed_pass).decode("utf-8"))
             print("Deleted " + del_domain + " profile successfully!")
             userContinue = timeoutInput("\nPress enter to return to menu...")
-            print("Returning to menu")
-            return False
+            if userContinue != timeoutGlobalCode:
+                print("Returning to menu")
+                return False
+            else:
+                return True
         except:
             print("Unable to find " + del_domain)
             userContinue = timeoutInput("\nPress enter to return to menu...")
+            if userContinue != timeoutGlobalCode:
+                print("Returning to menu")
+                return False
+            else:
+                return True
+    else:
+        if del_domain != timeoutGlobalCode:
             print("Returning to menu")
             return False
-    else:
-        print("Returning to menu...")
-        return False
+        else:
+            return True
 
 
 def pwdGenerate(hashed_pass, db):
     displayHeader("GENERATE RANDOM PASSWORD")
     pass_length = str(timeoutInput("Password length (type (.c) to cancel): "))
-    if pass_length != ".c":
+    if pass_length != ".c" and pass_length != timeoutGlobalCode:
         try:
             if int(pass_length) < 6:
                 pass_length = str(12)
                 print("\nPasswords must be at least 6 characters long.")
             print(to_clipboard(str(generate_password(int(pass_length)))))
             userContinue = timeoutInput("\nPress enter to return to menu...")
-            print("Returning to menu")
-            return False
+            if userContinue != timeoutGlobalCode:
+                print("Returning to menu")
+                return False
+            else:
+                return True
         except:
             print("Unable to generate password.")
             userContinue = timeoutInput("\nPress enter to return to menu...")
+            if userContinue != timeoutGlobalCode:
+                print("Returning to menu")
+                return False
+            else:
+                return True
+    else:
+        if pass_length != timeoutGlobalCode:
             print("Returning to menu")
             return False
-    else:
-        print("Returning to menu")
-        return False
+        else:
+            return True
 
 
 def fileSetup():
@@ -391,9 +522,10 @@ def clear_clipboard_timer():
 # Put string in clipboard
 def to_clipboard(input_to_copy):
     pyperclip.copy(str(input_to_copy))
+    del input_to_copy
     threading.Thread(target=clear_clipboard_timer).start()
     return "Password was saved to clipboard. It will be removed from your clipboard as soon as you paste it."
-    
+
 
 # TIMEOUT
 def timeoutCleanup():
@@ -402,7 +534,7 @@ def timeoutCleanup():
     print(
         "\n\nYour session expired. For your security, the program has automatically exited. All submitted data is still saved."
     ) 
-    exit
+    sys.exit
 
 
 def timeoutInput(caption):
