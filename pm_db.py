@@ -14,15 +14,7 @@ import time
 from inputimeout import inputimeout, TimeoutOccurred
 import keyboard as kb
 import sys
-"""
-ChangeLog by aarana14:
- + Added main function to run program, allowing more flexibility to allow user to input master password more than once if they messed up. Also better syntax.
- + Added ability to return to menu if "add profile" is selected without having to input anything
- + Cleaned up boolens
- + main_pwd_manager added to run the manager inside a function that can be called up
- + fileSetup() lods up salting and verifier
- + Added all manager functions as methods for better syntax, flexibility, readibility, and editability
-"""
+
 
 divider = "-----------------------------------------------------------------------------------------------------------------------\n"
 lockImg = """                               
@@ -78,6 +70,10 @@ def main():
     if hashed_pass:
         del entered_pass
         main_pwd_manager(hashed_pass, dataBase)
+        del hashed_pass
+        del cSALT
+        del cVERIFIER
+        del dataBase
 
 
 def main_pwd_manager(hashed_pass, contents):
@@ -163,7 +159,7 @@ def changeMasterPassword(hashed_pass, db):
             for e in db:
                 i = i + 1
 
-                # decrypt the username and password with the original master passwordd
+                # decrypt the username and password with the original master password
                 username = str(
                     decrypt_data(
                         bytes(db[domains[i]]["username"], encoding="utf-8"), hashed_pass
@@ -180,9 +176,7 @@ def changeMasterPassword(hashed_pass, db):
                 # encrypt and save them with then new master password
                 db[domains[i]] = {
                     "username": str(encrypt_data(username, hashed_entered_pass).decode("utf-8")),
-                    "password": str(
-                        encrypt_data(password, hashed_entered_pass).decode("utf-8")
-                    ),
+                    "password": str(encrypt_data(password, hashed_entered_pass).decode("utf-8")),
                 }
 
                 del e
@@ -199,7 +193,7 @@ def changeMasterPassword(hashed_pass, db):
             file.write(encrypt_data("entered_master_correct", hashed_entered_pass))
             file.close()
             
-            #finally overwrite the database file with everything encrypted with the new password
+            # finally overwrite the database file with everything encrypted with the new password
             overwrite_db(encrypt_data(json.dumps(db), hashed_entered_pass).decode("utf-8"))
             del hashed_entered_pass
             del hashed_pass
