@@ -554,16 +554,3 @@ def overwrite_db(new_contents):
 
 if __name__ == "__main__":
     main()
-© 2021 GitHub, Inc.
-Terms
-Privacy
-Security
-Status
-Docs
-Contact GitHub
-Pricing
-API
-Training
-Blog
-About
-Loading complete
