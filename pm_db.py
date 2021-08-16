@@ -383,16 +383,17 @@ def displayHeader(title):
 
 # Clear clipboard after 30 seconds
 def clear_clipboard_timer():
-    kb.add_hotkey("ctrl+v",lambda: pyperclip.copy(""))
+    kb.wait('ctrl+v')
+    time.sleep(0.1) # Without sleep, clipboard will automatically clear before user actually pastes content
+    pyperclip.copy("")
 
 
 # Put string in clipboard
 def to_clipboard(input_to_copy):
     pyperclip.copy(str(input_to_copy))
-    del input_to_copy
     threading.Thread(target=clear_clipboard_timer).start()
     return "Password was saved to clipboard. It will be removed from your clipboard as soon as you paste it."
-
+    
 
 # TIMEOUT
 def timeoutCleanup():
