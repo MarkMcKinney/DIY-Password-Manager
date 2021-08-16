@@ -199,7 +199,8 @@ def changeMasterPassword(hashed_pass, db):
         overwrite_db(encrypt_data(json.dumps(db), hashed_entered_pass).decode("utf-8"))
         del hashed_entered_pass
         del hashed_pass
-        print("Master password changed successfully!")
+        print("Master password changed successfully! Log in again to access the password manager.")
+        exit()
         
     except:
         print("Could not change master password (Error code: 01)")
