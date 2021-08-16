@@ -142,69 +142,75 @@ def main_pwd_manager(hashed_pass, contents):
     
     
 def changeMasterPassword(hashed_pass, db):
-    password_provided = getpass.getpass("What would you like your master password to be? ")
-    password = password_provided.encode()  # Convert to type bytes
-    salt = os.urandom(random.randint(16, 256))
-    kdf = Scrypt(
-        salt=salt,
-        length=32,
-        n=2 ** 14,
-        r=8,
-        p=1,
-    )
-    hashed_entered_pass = base64.urlsafe_b64encode(kdf.derive(password))  # Can only use kdf once
-    try:
-        i = -1
-        domains = list(db.keys())
-        for e in db:
-            i = i + 1
+    # CHANGE MASTER PASSWORD
+    displayHeader("CHANGE MASTER PASSWORD")
+    password_provided = getpass.getpass("What would you like your master password to be (type and submit (.c) to cancel)? ")
+    if password_provided != ".c":
+        password = password_provided.encode()  # Convert to type bytes
+        salt = os.urandom(random.randint(16, 256))
+        kdf = Scrypt(
+            salt=salt,
+            length=32,
+            n=2 ** 14,
+            r=8,
+            p=1,
+        )
+        hashed_entered_pass = base64.urlsafe_b64encode(kdf.derive(password))  # Can only use kdf once
+        try:
+            i = -1
+            domains = list(db.keys())
+            for e in db:
+                i = i + 1
 
-            # decrypt the username and password with the original master passwordd
-            username = str(
-                decrypt_data(
-                    bytes(db[domains[i]]["username"], encoding="utf-8"), hashed_pass
-                ).decode("utf-8")
-            )
+                # decrypt the username and password with the original master passwordd
+                username = str(
+                    decrypt_data(
+                        bytes(db[domains[i]]["username"], encoding="utf-8"), hashed_pass
+                    ).decode("utf-8")
+                )
 
-            password = str(
-                decrypt_data(
-                    bytes(db[domains[i]][ "password"], encoding="utf-8"),
-                    hashed_pass,
-                ).decode("utf-8")
-            )
+                password = str(
+                    decrypt_data(
+                        bytes(db[domains[i]][ "password"], encoding="utf-8"),
+                        hashed_pass,
+                    ).decode("utf-8")
+                )
 
-            # encrypt and save them with then new master password
-            db[domains[i]] = {
-                "username": str(encrypt_data(username, hashed_entered_pass).decode("utf-8")),
-                "password": str(
-                    encrypt_data(password, hashed_entered_pass).decode("utf-8")
-                ),
-            }
+                # encrypt and save them with then new master password
+                db[domains[i]] = {
+                    "username": str(encrypt_data(username, hashed_entered_pass).decode("utf-8")),
+                    "password": str(
+                        encrypt_data(password, hashed_entered_pass).decode("utf-8")
+                    ),
+                }
 
-            del e
-            del username
-            del password
+                del e
+                del username
+                del password
 
-        del domains
-        file = open("SALT.txt", "wb")
-        file.write(salt)
-        file.close()
-        del salt
+            del domains
+            file = open("SALT.txt", "wb")
+            file.write(salt)
+            file.close()
+            del salt
 
-        file = open("VERIFIER.txt", "wb")
-        file.write(encrypt_data("entered_master_correct", hashed_entered_pass))
-        file.close()
-        
-        #finally overwrite the database file with everything encrypted with the new password
-        overwrite_db(encrypt_data(json.dumps(db), hashed_entered_pass).decode("utf-8"))
-        del hashed_entered_pass
-        del hashed_pass
-        print("Master password changed successfully! Log in again to access the password manager.")
-        exit()
-        
-    except:
-        print("Could not change master password (Error code: 01)")
-    print("\nPress enter to return to menu...")
+            file = open("VERIFIER.txt", "wb")
+            file.write(encrypt_data("entered_master_correct", hashed_entered_pass))
+            file.close()
+            
+            #finally overwrite the database file with everything encrypted with the new password
+            overwrite_db(encrypt_data(json.dumps(db), hashed_entered_pass).decode("utf-8"))
+            del hashed_entered_pass
+            del hashed_pass
+            print("Master password changed successfully! Log in again to access the password manager.")
+            timeoutInput("\nPress enter to logout..")
+            os.system("cls" if os.name == "nt" else "clear")
+            return True
+        except:
+            print("Could not change master password (Error code: 01)")
+    timeoutInput("\nPress enter to return to menu...")
+    print("Returning to Menu")
+    return False
     
 
 def addProfile(hashed_pass, db):
