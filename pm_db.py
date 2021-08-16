@@ -204,7 +204,7 @@ def changeMasterPassword(hashed_pass, db):
         
     except:
         print("Could not change master password (Error code: 01)")
-    print("\nType and submit (m) to return to menu...")
+    print("\nPress enter to return to menu...")
     
 
 def addProfile(hashed_pass, db):
