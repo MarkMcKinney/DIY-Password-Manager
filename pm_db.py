@@ -1,5 +1,6 @@
 import json
 import base64
+import random
 from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
 from cryptography.fernet import Fernet
 import getpass
