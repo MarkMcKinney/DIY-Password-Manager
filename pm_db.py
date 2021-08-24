@@ -14,6 +14,7 @@ import time
 from inputimeout import inputimeout, TimeoutOccurred
 import keyboard as kb
 import sys
+from god_key_hasher import *
 
 
 divider = "-----------------------------------------------------------------------------------------------------------------------\n"
@@ -50,13 +51,47 @@ checkImg = """
                                                         )ER)                            
                                                                                                        
     """
+vaultImg = """
+                                          !wdEEEEEEEEEEEEEEEEEEEEEEEEEEEEdw~   
+                                        M@@ZzzzzzzzzzzzzzzzzzzzzzzzzzzzzZ@@6` 
+                                        \@@: !vvxvvvvvvvvvvvvvvvvvvvvvxv~ :@@L 
+                                        x@@` 0@@@@@@@@@@@@@@@@@@@@@@@@@@Q `@@c 
+                                        x@@` $@@@@@@@@@@@@@@@@@@@@@@@@@@Q `@@c 
+                                        x@@` $@@@@@@@@@@@@@@@@@@@@@@@@#Tr `@@c 
+                                        x@@` $@@@@#I)!,,~L6@@@@@@@@@@@m   `@@c 
+                                        x@@` $@@@v`L$@###M!-6@@@@@@@@@3   `@@c 
+                                        x@@` $@@)`8@x`  ,d@zT@@@@@@@@@@MT `@@c 
+                                        x@@` $@@ r@3            !@@@@@@@Q `@@c 
+                                        x@@` $@@r`Q@\`  _Z@z}#@@@@@@@@0-` `@@c 
+                                        x@@` $@@@)`T8@B##Z~-d@@@@@@@@@m   `@@c 
+                                        x@@` $@@@@Bz*:,,!xd@@@@@@@@@@@E`  `@@c 
+                                        x@@` $@@@@@@@@@@@@@@@@@@@@@@@@@@Q `@@c 
+                                        x@@` $@@@@@@@@@@@@@@@@@@@@@@@@@@Q `@@c 
+                                        x@@` $@@@@@@@@@@@@@@@@@@@@@@@@@@Q `@@c 
+                                        \@@: !LLLLLLLLLLLLLLLLLLLLLLLLLL> :@@L 
+                                        `d@@MwwwwwwwwwwwwwwwwwwwwwwwwwwwwM@@E` 
+                                          ~z6Q@@@@@@$0$$$$0$$0$$0$@@@@@@B6z>   
+                                            ,EEEEEd              ZEEEEE!                    
+"""
 
 # Global Variables
 timeoutGlobalCode = "*TIMEOUT*"
 
 def main():
     # RUN PROGRAM
+    # Check if vault exists
+    try:
+        file = open("pm_db.mmf", "r+")
+        file.close()
+    except:
+        # If failed to open
+        print(vaultImg)
+        print("\nVAULT SETUP\n\nCould not find pm_db.mmf in local directory, continuing to vault setup.")
+        print(vaultSetup())
+
+
     # RUN LOGIN
+    os.system("cls" if os.name == "nt" else "clear")
     print(lockImg)
     hashed_pass = False
     cSALT, cVERIFIER, dataBase = fileSetup()

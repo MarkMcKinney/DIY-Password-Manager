@@ -13,7 +13,7 @@ I'd love to hear from you about where I could improve it! You can also follow me
 This was done by encrypting JSON that contained logins, having all hashes and salts created with as much randomness as possible, and having an encrypted verifier string that the program knew what the decrypted version was.
 
 ## Instructions
-Run the god_key_hasher.py file and enter your desired master password. You can access your new vault by running the pm_db.py file and entering your master password.
+Just run the pm_db.py file. If you would like to setup a new vault, delete the pm_db.mmf file. Then, reopen pm_db.py and it will automatically walk you through the setup steps.
 
 ## Demo
 You can run the demo by opening the pm_db.py file and using **thisisatest!** as the password.
